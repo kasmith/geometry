@@ -3,7 +3,8 @@ import numpy as np
 import copy
 
 __all__ = ['check_clockwise', 'check_counterclockwise','point_in_poly', 'euclid_dist', 'lines_intersect',
-           'find_intersection_point', 'angle_between', 'find_mutually_visible', 'point_on_line']
+           'find_intersection_point', 'angle_between', 'find_mutually_visible', 'point_on_line',
+           'distance_point_2_line', 'distance_point_2_seg', 'point_on_left']
 
 
 # Returns the euclidean distance between two points
@@ -77,7 +78,9 @@ def point_on_line(point, seg_p1, seg_p2, tol = 1e-6):
             maxy = max(seg_p1[1], seg_p2[1])
             return miny <= point[1] <= maxy
     prop_along = (point[0]-seg_p1[0]) / (seg_p2[0]-seg_p1[0])
-    guess_y = seg_p1[1] + prop_along*seg_p2[1]
+    if prop_along < 0 or prop_along > 1:
+        return False
+    guess_y = seg_p1[1] + prop_along*(seg_p2[1] - seg_p1[1])
     return abs(guess_y - point[1]) < tol
 
 # Checks whether the two line segments ab and cd intersect (just whether -- not where)
@@ -114,6 +117,13 @@ def find_intersection_point(a, b, c, d):
         return p + t*r
     else:
         return None
+
+# Finds whether a point is on the left of a given line defined by a segment
+def point_on_left(pt, seg):
+    sa, sb = seg
+    cprod = np.cross(sb - sa, pt - sa)
+    return cprod > 0
+
 
 # Finds mututally visible points for doing clipping with interior holes
 # Returns: [index of outer shell point, index of inner point, outer point, inner point]
@@ -183,7 +193,26 @@ def find_mutually_visible(exterior_hull, interior_hull):
     return min_idx, hp_idx, min_pt, gx_in
 
 
+# Finds the minimum distance and closest point between a point and a line
+def distance_point_2_line(point, seg):
+    dseg = seg[1] - seg[0]
+    dpt = point - seg[0]
+    proj = (np.dot(dpt, dseg) / np.dot(dseg, dseg)) * dseg
+    dist = np.linalg.norm(dpt, proj)
+    return dist, seg[0]+proj
 
-if __name__ == '__main__':
-    pip = point_in_poly([573, 153], [np.array([573, 60]), np.array([713, 260]), np.array([573, 260])])
-    print pip
+# Finds the minimum distance between a point and a line segment
+def distance_point_2_seg(point, seg):
+    dseg = seg[1] - seg[0]
+    # Segment is actually a point
+    if all(dseg == np.array([0,0])):
+        return np.linalg.norm(point - seg[0])
+    dpt = point - seg[0]
+    prop_proj = (np.dot(dpt, dseg) / np.dot(dseg, dseg))
+    if prop_proj < 0:
+        return np.linalg.norm(point - seg[0])
+    elif prop_proj > 1:
+        return np.linalg.norm(point - seg[1])
+    else:
+        proj = dseg*prop_proj
+        return np.linalg.norm(dpt - proj)

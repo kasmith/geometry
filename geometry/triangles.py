@@ -46,7 +46,7 @@ def ear_clip(vertices):
     return trilist
 
 
-# Does ear clipping with holes
+# Does ear clipping with holes -- returns the triangle list from clipping and the new vertex list
 def ear_clip_with_holes(outer_shell, hole_list):
     # Copy each and make into numpy arrays
     outer_shell = map(np.array, outer_shell)
@@ -59,17 +59,12 @@ def ear_clip_with_holes(outer_shell, hole_list):
         if check_counterclockwise(hole):
             hole.reverse()
         # Find mutually visible points
-        oidx, hidx, _, _ = find_mutually_visible(outer_shell, hole)
+        oidx, hidx, opt, hpt = find_mutually_visible(outer_shell, hole)
+        # Edge case - the cut points on each hull and next are on the same line -- skip that point
+        if opt[1] == hpt[1] == outer_shell[(oidx + 1) % len(outer_shell)][1]:
+            outer_shell = outer_shell[:(oidx+1)] + hole[hidx:] + hole[:(hidx+1)] + outer_shell[(oidx+1):]
         # Cut the outer shell list and insert the hole vertices
-        outer_shell = outer_shell[:(oidx+1)] + hole[hidx:] + hole[:(hidx+1)] + outer_shell[oidx:]
+        else:
+            outer_shell = outer_shell[:(oidx+1)] + hole[hidx:] + hole[:(hidx+1)] + outer_shell[oidx:]
     # Now do ear clipping on the full structure
-    return ear_clip(outer_shell)
-
-if __name__ == '__main__':
-    vlist = map(np.array, [(79, 78), (493, 78), (493, 114), (678, 114), (678, 163), (928, 163), (928, 269), (934, 269), (934, 491),
-               (974, 491), (974, 596), (909, 596), (909, 560), (663, 560), (663, 491), (699, 491), (699, 401),
-               (656, 401), (656, 469), (588, 469), (588, 401), (551, 401), (551, 365), (438, 365), (438, 431),
-               (153, 431), (153, 258), (79, 258)])
-
-    #vlist = map(np.array, [(0,0), (4,0), (4,4), (3,4), (3,2), (1,2), (1,3), (2,3), (2,4), (0,4)])
-    print ear_clip(vlist)
+    return ear_clip(outer_shell), outer_shell
