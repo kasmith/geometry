@@ -4,7 +4,7 @@ import copy
 
 __all__ = ['check_clockwise', 'check_counterclockwise','point_in_poly', 'euclid_dist', 'lines_intersect',
            'find_intersection_point', 'angle_between', 'find_mutually_visible', 'point_on_line',
-           'distance_point_2_line', 'distance_point_2_seg', 'point_on_left']
+           'distance_point_2_line', 'distance_point_2_seg', 'point_on_left', 'point_in_convex_poly']
 
 
 # Returns the euclidean distance between two points
@@ -66,6 +66,19 @@ def point_in_poly(point, vertices):
             if pside != cside:
                 return False
     return True
+
+# Returns boolean determining if a point is in a concave polygon
+# Idea from http://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
+def point_in_convex_poly(point, vertices):
+    max_vx = max([x for x,y in vertices])
+    p_ray = point + np.array([max_vx, 0])
+    n_intersects = 0
+    for i in range(len(vertices)):
+        v1 = vertices[i]
+        v2 = vertices[(i+1) % len(vertices)]
+        if lines_intersect(point, p_ray, v1, v2):
+            n_intersects += 1
+    return (n_intersects % 2) == 1
 
 # Returns whether a point lies on a line segment (within tiny tolerance)
 def point_on_line(point, seg_p1, seg_p2, tol = 1e-6):
