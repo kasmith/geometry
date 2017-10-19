@@ -1,3 +1,7 @@
+"""Classes for handling non-convex polygons
+"""
+
+from __future__ import division, print_function
 import numpy as np
 from helpers import *
 from convex import *
@@ -7,6 +11,7 @@ __all__ = ['approximate_convex_decomposition']
 
 # Decompose a non-convex shape into approximately convex hulls
 # From Lien & Amato (2006): Approximate convex decomposition of polygons
+
 
 class _viz_tree_node(object):
     def __init__(self, point, index, parent, total_dist):
@@ -21,7 +26,7 @@ class _viz_tree_node(object):
     def add_child(self, point, index):
         d = self.dist_to_pt(point)
         self._children.append(_viz_tree_node(point, index,
-                              self, self._total_dist + d))
+                                             self, self._total_dist + d))
 
     def get_greatest_dist(self):
         if len(self._children) == 0:
@@ -45,8 +50,9 @@ class _viz_tree_node(object):
                 leaves += c.get_leaves
             return leaves
 
+
 class _viz_tree(object):
-    def __init__(self, poly, head_node_idx = 0):
+    def __init__(self, poly, head_node_idx=0):
         self._head = _viz_tree_node(poly[head_node_idx], head_node_idx, None, 0)
         self._poly = poly
         rem_vertices = range(len(self._poly))
@@ -60,12 +66,14 @@ class _viz_tree(object):
         if abs(idx1 - idx2) == 1:
             return False
         else:
-            return False # TO BE FIXED _ NOT RIGHT!!!
+            return False  # TO BE FIXED _ NOT RIGHT!!!
 
 # Calculate straight-line concavity for a notch in a pocket
 # Input:
 #  pocket: a list of vertices forming the pocket
-def _sl_concavity(pocket, bridge = None):
+
+
+def _sl_concavity(pocket, bridge=None):
     if bridge is None:
         bridge = [pocket[0], pocket[-1]]
         dists = [0] + [distance_point_2_seg(p, bridge) for p in pocket[1:-1]] + [0]
@@ -93,15 +101,15 @@ def _sp_concavity(pocket, bridge):
     b_plus = pocket[-1]
     tan_dir = [-(b_plus[1] - b_minus[1]), b_plus[0] - b_minus[0]]
     scaling_factor = max(map(max, pocket))
-    tan_ray_minus = b_minus + tan_dir*scaling_factor
-    tan_ray_plus = b_plus + tan_dir*scaling_factor
+    tan_ray_minus = b_minus + tan_dir * scaling_factor
+    tan_ray_plus = b_plus + tan_dir * scaling_factor
     # Go through the points until we hit an intersection with the tangent line
     i = 1
     b_m_spl = None
     b_p_spl = None
     while b_m_spl is None:
         m_spl_pt = find_intersection_point(b_minus, tan_ray_minus,
-                                           pocket[i-1], pocket[i])
+                                           pocket[i - 1], pocket[i])
         if m_spl_pt is not None:
             b_m_spl = i
             P_minus = pocket[:b_m_spl] + [m_spl_pt]
@@ -111,39 +119,13 @@ def _sp_concavity(pocket, bridge):
     i = 1
     while b_p_spl is None:
         p_spl_pt = find_intersection_point(b_plus, tan_ray_plus,
-                                           rem_pocket[i-1], rem_pocket[i])
+                                           rem_pocket[i - 1], rem_pocket[i])
         if p_spl_pt is not None:
             b_p_spl = b_m_spl + i
             P_mid = rem_pocket[:i] + [p_spl_pt]
             P_plus = [p_spl_pt] + rem_pocket[i:]
-    return 0 # TO BE DONE LATER
+    return 0  # TO BE DONE LATER
 
-
-# Perform the decomposition
-# Input:
-#  vertex_lists: a list of list of vertices. The first position must always be the outer hull. Further are holes
-#  tau: minimum allowable convexity angle for decomposition
-# Output:
-#  a ConcaveHull object with the associated decomposition
-def approximate_convex_decomposition(vertex_lists, tau, witness_type = "shortest_length"):
-    if witness_type == 'shortest_length':
-        witness_fnc = _sl_concavity
-    else:
-        raise NotImplementedError("Only shortest_length is an acceptable witness_type")
-    outer = vertex_lists[0]
-    if len(vertex_lists) > 1:
-        holes = vertex_lists[1:]
-        # First, reorder holes to get at the ones closest to the boundary first
-        hole_dists = [_find_min_poly_dist(h, outer) for h in holes]
-        ordered_holes = [h for (d,h) in sorted(zip(hole_dists, holes))]
-        for h in ordered_holes:
-            outer = _acd_inner(h, outer, tau, witness_fnc)
-    return _acd_outer(outer, tau, witness_fnc)
-
-def _find_point_in_vlist(pt, vlist):
-    for i, v in enumerate(vlist):
-        if all(pt==v):
-            return i
 
 def _acd_inner(hole, shell, tau, witness_fnc):
     # Find the antinoal pair for this hole, and point to use for cut point
@@ -164,17 +146,16 @@ def _acd_inner(hole, shell, tau, witness_fnc):
     # Try to form a cut with the vertices
     for vtx, v_cut in [(cut_shell, cut_vert), (other_shell, other_vert)]:
         vidx = _find_point_in_vlist(vtx, shell)
-        v_pre = shell[(vidx-1) % len(shell)]
-        v_post = shell[(vidx+1) % len(shell)]
+        v_pre = shell[(vidx - 1) % len(shell)]
+        v_post = shell[(vidx + 1) % len(shell)]
         if _is_resolved(vidx, shell, v_cut, [v_pre, vidx, v_post]):
             # This is good = cut open the shell and add the hole
             if not check_clockwise(hole):
                 hole.reverse()
             hidx = _find_point_in_vlist(v_cut, hole)
-            comb = shell[:(vidx+1)] + hole[hidx:] + hole[:(hidx+1)] + shell[vidx:]
+            comb = shell[:(vidx + 1)] + hole[hidx:] + hole[:(hidx + 1)] + shell[vidx:]
             return comb
     raise Exception("Uh oh -- can't match either cut point (thought I'd never get here)")
-
 
 
 def _acd_outer(vertices, tau, witness_fnc):
@@ -226,8 +207,8 @@ def _find_witness(vertices, witness_fnc):
                 pockets.append(next_pocket)
                 next_pocket = []
             # Special case: start of a pocket
-            if gidx < (len(wrapped)-1):
-                if not all(wrapped[gidx+1] == vertices[vi+1]):
+            if gidx < (len(wrapped) - 1):
+                if not all(wrapped[gidx + 1] == vertices[vi + 1]):
                     next_pocket = [vtx]
             # Otherwise part of the outer hull
             gidx = (gidx + 1) % len(wrapped)
@@ -249,6 +230,8 @@ def _find_witness(vertices, witness_fnc):
     return maxdist, witness, pock
 
 # Find a point to cut
+
+
 def _find_cut_heur(cut_vertex, vertices, pocket):
     cut_idx = _find_point_in_vlist(cut_vertex, vertices)
     nvs = len(vertices)
@@ -261,17 +244,19 @@ def _find_cut_heur(cut_vertex, vertices, pocket):
     max_score = 0
     while not all(ptr == cut_vertex):
         vec = ptr - cut_vertex
-        score = 1. / np.linalg.norm(vec) # Find the shortest length that works
+        score = 1. / np.linalg.norm(vec)  # Find the shortest length that works
         if score > max_score:
-             if _is_resolved(cut_idx, vertices, ptr, pocket):
-                 max_score = score
-                 best_v = ptr
+            if _is_resolved(cut_idx, vertices, ptr, pocket):
+                max_score = score
+                best_v = ptr
         ptr_idx = (ptr_idx + 1) % len(vertices)
         ptr = vertices[ptr_idx]
     return best_v
 
 # Does this make two hulls when split along a point?
 # Can't be one of the pocket points
+
+
 def _is_resolved(vidx, vertices, v_cut, pocket):
     vtx = vertices[vidx]
     nvs = len(vertices)
@@ -285,7 +270,7 @@ def _is_resolved(vidx, vertices, v_cut, pocket):
         return False
     # And finally, must not intersect with any other line segments
     for i in range(1, nvs):
-        v_before = vertices[i-1]
+        v_before = vertices[i - 1]
         v_after = vertices[i]
         if not (all(vtx == v_before) or all(vtx == v_after) or all(v_cut == v_before) or all(v_cut == v_after)):
             if lines_intersect(vtx, v_cut, v_before, v_after):
@@ -294,6 +279,8 @@ def _is_resolved(vidx, vertices, v_cut, pocket):
 
 # Finds the antinodal pairs in a hole
 # Note: naive implementation -- not the most efficient
+
+
 def _find_antinodal(hole, witness_fnc):
     node = None
     antinode = None
@@ -308,6 +295,8 @@ def _find_antinodal(hole, witness_fnc):
     return [node, antinode]
 
 # Finds the closest point on a polygon to a give point
+
+
 def _find_min_vertex_dist(p, poly):
     mindist = None
     minvert = None
@@ -322,6 +311,45 @@ def _find_min_vertex_dist(p, poly):
     return mindist, minvert
 
 # Finds the minimum distance between two polygons
+
+
 def _find_min_poly_dist(poly1, poly2):
-    dists = [_find_min_vertex_dist(v,poly2)[0] for v in poly1]
+    dists = [_find_min_vertex_dist(v, poly2)[0] for v in poly1]
     return min(dists)
+
+
+def _find_point_in_vlist(pt, vlist):
+    for i, v in enumerate(vlist):
+        if all(pt == v):
+            return i
+
+
+def approximate_convex_decomposition(vertex_lists, tau,
+                                     witness_type="shortest_length"):
+    """Decomposes a non-convex shape into approimate convex hulls
+
+    Uses ACD method of From Lien & Amato (2006): Approximate convex
+    decomposition of polygons
+
+    Args:
+        vertex_lists (list): A list of list of vertices. The first position
+        must always be the outer hull. Further are holes
+        tau (float): minimum allowable convexity angle for decomposition
+        witness_type (str): currently not implemented
+
+    Returns:
+        A list of vertex lists, each of which is a component convex hull
+    """
+    if witness_type == 'shortest_length':
+        witness_fnc = _sl_concavity
+    else:
+        raise NotImplementedError("Only shortest_length is an acceptable witness_type")
+    outer = vertex_lists[0]
+    if len(vertex_lists) > 1:
+        holes = vertex_lists[1:]
+        # First, reorder holes to get at the ones closest to the boundary first
+        hole_dists = [_find_min_poly_dist(h, outer) for h in holes]
+        ordered_holes = [h for (d, h) in sorted(zip(hole_dists, holes))]
+        for h in ordered_holes:
+            outer = _acd_inner(h, outer, tau, witness_fnc)
+    return _acd_outer(outer, tau, witness_fnc)

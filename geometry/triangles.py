@@ -1,11 +1,23 @@
+"""Functions for handling triangles
+"""
+
+from __future__ import division, print_function
 import numpy as np
 from helpers import *
 
 __all__ = ['ear_clip', 'ear_clip_with_holes']
 
 
-# Uses ear clipping to perform triangulation of a non-convex vertex set
+
 def ear_clip(vertices):
+    """Uses ear clipping to perform triangulation of a non-convex vertex set
+
+    Input:
+        vertices (list): A list of vertices forming the non-convex hull
+
+    Returns:
+        A list of length-3 lists that form component triangles
+    """
     assert len(vertices) >= 3, "Requires at least 3 points to triangulate"
     is_clockwise = check_clockwise(vertices)
     trilist = []
@@ -46,8 +58,19 @@ def ear_clip(vertices):
     return trilist
 
 
-# Does ear clipping with holes -- returns the triangle list from clipping and the new vertex list
+
 def ear_clip_with_holes(outer_shell, hole_list):
+    """Performs ear clipping when the shell has holes
+
+    Args:
+        outer_shell (list): list of vertices of outer shell
+        hole_list (list): list of list of vertices of each inner hole
+
+    Returns:
+        A list with two items:
+        * A list of 3-length vertex lists for the component triangles
+        * The list of vertices forming the outer hull
+    """
     # Copy each and make into numpy arrays
     outer_shell = map(np.array, outer_shell)
     hole_list = [map(np.array, hole) for hole in hole_list]

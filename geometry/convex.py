@@ -1,10 +1,24 @@
+"""Functions that help with convex hulls
+"""
+
+from __future__ import division, print_function
 import numpy as np
 from helpers import *
 
 __all__ = ['gift_wrap']
 
-# Simple function to gift wrap a set of vertices to get the convex hull
+
 def gift_wrap(vertices):
+    """Simple function to gift wrap a set of vertices to get the convex hull
+
+    Uses the gift-wrapping algorithm
+
+    Args:
+        vertices (list): A list of (x,y) points to gift wrap
+
+    Returns:
+        The CCW set of vertices forming the convex hull of the input
+    """
     # Get the left-most vertex
     pt = vertices[0]
     for v in vertices:
@@ -25,4 +39,3 @@ def gift_wrap(vertices):
         running = any(hull[0] != pt)
     hull.reverse()
     return hull
-
