@@ -9,7 +9,7 @@ __all__ = ['check_clockwise', 'check_counterclockwise', 'point_in_poly',
            'euclid_dist', 'lines_intersect', 'find_intersection_point',
            'angle_between', 'find_mutually_visible', 'point_on_line',
            'distance_point_2_line', 'distance_point_2_seg', 'point_on_left',
-           'point_in_convex_poly']
+           'point_in_concave_poly']
 
 
 def euclid_dist(p1, p2):
