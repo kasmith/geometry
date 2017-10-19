@@ -7,7 +7,8 @@ from convex import convex_area, convex_centroid
 
 __all__ = ['recenter_polygon', 'centroid_for_shapes',
            'centroid_for_uncomputed_shapes', 'recenter_system',
-           'rescale_and_recenter_system']
+           'rescale_and_recenter_system', 'rotate_polygon',
+           'rotate_system']
 
 def recenter_polygon(vertices):
     """Returns a new convex polygon with centroid at (0,0)
@@ -140,3 +141,37 @@ def rescale_and_recenter_system(shape_list, total_area):
     for ns,c in zip(new_shapes, re_centroids):
         final_shapes.append([(s+c)*dim_scale for s in ns])
     return final_shapes, center
+
+def rotate_polygon(vertices, angle, center_point = [0., 0.]):
+    """Rotates a shape around a given point (the origin)
+
+    Args:
+        vertices (list): A list of (x,y) vertices
+        angle (float): Angle in radians to rotate counterclockwise
+        center_point ([float, float]): (x,y) point to rotate around
+
+    Returns:
+        A list of vertices rotated around the center point
+    """
+    np_o = np.array(center_point)
+    np_vs = [np.array(v) - np_o for v in vertices]
+    rot_mat = np.array([[np.cos(angle), -np.sin(angle)],
+                        [np.sin(angle), np.cos(angle)]])
+    return [np.dot(rot_mat, v)+np_o for v in np_vs]
+
+def rotate_system(shape_list, angle, center_point = None):
+    """Rotates a set of shapes around a given point
+
+    If no center point is given, assume the center of mass of the shape
+
+    Args:
+        shape_list (list): A list of list of (x,y) vertices
+        angle (float): Angle in radians to rotate counterclockwise
+        center_point ([float, float]): (x,y) point to rotate around
+
+    Returns:
+        A new shape list with rotated vertices
+    """
+    if center_point is None:
+        center_point = centroid_for_uncomputed_shapes(shape_list)
+    return [rotate_polygon(s, angle, center_point) for s in shape_list]
