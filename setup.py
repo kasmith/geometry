@@ -8,5 +8,5 @@ setup(name = "geometry",
       author = "Kevin A Smith",
       author_email= "k2smith@mit.edu",
       url = "Https://github.com/kasmith/geometry",
-      packages = ["geometry", "geometry.helpers"],
+      packages = ["geometry"],
       requires = ["numpy"])
