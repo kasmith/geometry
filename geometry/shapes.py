@@ -8,7 +8,8 @@ from convex import convex_area, convex_centroid
 __all__ = ['recenter_polygon', 'centroid_for_shapes',
            'centroid_for_uncomputed_shapes', 'recenter_system',
            'rescale_and_recenter_system', 'rotate_polygon',
-           'rotate_system']
+           'rotate_system', 'mirror_polygon', 'mirror_system',
+           'find_concave_outline']
 
 def recenter_polygon(vertices):
     """Returns a new convex polygon with centroid at (0,0)
@@ -175,3 +176,106 @@ def rotate_system(shape_list, angle, center_point = None):
     if center_point is None:
         center_point = centroid_for_uncomputed_shapes(shape_list)
     return [rotate_polygon(s, angle, center_point) for s in shape_list]
+
+def mirror_polygon(vertices, axes=(False, True), center_point=None):
+    """Mirrors a polygon around an x or y line
+
+    If center_point is None, mirror around the center of the shape
+
+    Args:
+        vertices (list): A list of (x,y) vertices
+        axes ([bool, bool]): Whether to mirror around the (x,y) axes
+        center_point ([float, float]): (x,y) point to mirror around
+
+    Returns:
+        A new polygon with rotated vertices
+    """
+    if center_point is None:
+        center_point = convex_centroid(vertices)
+    xm = -1 if axes[0] else 1
+    ym = -1 if axes[1] else 1
+    return [np.array([xm*(v[0]-center_point[0])+center_point[0],
+                      ym*(v[1]-center_point[1])+center_point[1]]) for v
+            in vertices]
+
+def mirror_system(shape_list, axes=(False, True), center_point=None):
+    """Mirrors a polygon around an x or y line
+
+    Mirrors around the center of the system if center_point is None
+
+    Args:
+        shape_list (list): A list of list of (x,y) vertices
+        axes ([bool, bool]): Whether to mirror around the (x,y) axes
+        center_point ([float, float]): (x,y) point to mirror around
+
+    Returns:
+        A new shape list with rotated vertices
+    """
+    if center_point is None:
+        center_point = centroid_for_uncomputed_shapes(shape_list)
+    return [mirror_polygon(s, axes, center_point) for s in shape_list]
+
+
+def _point_equal(p1, p2):
+    return p1[0]==p2[0] and p1[1] == p2[1]
+
+def _arr_eq(a1, a2):
+    return all(_point_equal(p1,p2) for p1, p2 in zip(a1, a2))
+
+def find_concave_outline(shape_list):
+    """Find the outline of a set of shapes
+
+    Assuming all shapes have edges in common with other shapes where they touch,
+    provides a set of vertices for drawing the outline
+
+    Args:
+        shape_list (list): A list of list of (x,y) vertices
+
+    Returns:
+        A list of ordered (x,y) vertices for drawing an outline
+    """
+    # Find the most lower-right point
+    current_shape = shape_list[0]
+    current_pt = current_shape[0]
+    test_idx = 1
+    next_test_dir = 1
+    for s in shape_list:
+        for i in range(len(s)):
+            p = s[i]
+            if ((p[0] < current_pt[0]) or
+                    (p[0] == current_pt[0] and p[1] < current_pt[1])):
+                # Replace
+                current_pt = p
+                current_shape = s
+                test_idx = (i+1) % len(s)
+                next_test_dir = 1
+    vertex_list = [current_pt]
+    # Keep going until you reach back to the first point
+    while not _point_equal(current_shape[test_idx], vertex_list[0]):
+        # Iterate through all the shapes to try to find a matching edge
+        checking = True
+        for s in (s for s in shape_list if not _arr_eq(s, current_shape)):
+            if checking:  # Way to break out if match found
+                for i in range(len(s)):
+                    spt = s[i]
+                    if _point_equal(current_pt, spt):
+                        spt_after = s[(i+1) % len(s)]
+                        spt_before = s[(i-1) % len(s)]
+                        test_pt = current_shape[test_idx]
+                        if _point_equal(test_pt, spt_after):
+                            test_idx = (i-1) % len(s)
+                            next_test_dir = -1
+                            current_shape = s
+                            checking = False
+                        elif _point_equal(test_pt, spt_before):
+                            test_idx = (i+1) % len(s)
+                            next_test_dir = 1
+                            current_shape = s
+                            checking = False
+        # Have you exhausted all shapes?
+        if checking:
+            current_pt = current_shape[test_idx]
+            vertex_list.append(current_pt)
+            test_idx += next_test_dir
+            test_idx %= len(current_shape)
+    return vertex_list
