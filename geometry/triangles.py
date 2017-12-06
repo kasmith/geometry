@@ -32,27 +32,29 @@ def ear_clip(vertices):
             p2 = vl[(i+1) % lnvl]
             p3 = vl[(i+2) % lnvl]
             # Do these points make an ear?
-            # First, the p1-p3 line must be inside the polygon
-            is_left = np.cross(p3 - p1, p2 - p1) > 0
-            if (is_left and is_clockwise) or (not is_left and not is_clockwise):
-                # Next, are no other points inside the triangle
-                is_ear = True
-                j = 0
-                while j < len(vl) and is_ear:
-                    if j != i and j != ((i+1) % lnvl) and j != ((i+2) % lnvl):
-                        # Check if there are points inside -- if so, it's not an ear
-                        if point_in_poly(vl[j], [p1,p2,p3]):
-                            is_ear = False
-                        # Check if there are points on the vertices -- if so, it's not an ear (unless it's a copy)
-                        if point_on_line(vl[j], p1, p2) or point_on_line(vl[j], p2, p3) or point_on_line(vl[j], p1, p3):
-                            if not (all(vl[j] == p1) or all(vl[j]==p2) or all(vl[j]==p3)):
+            # Catch case: are they all collinear?
+            if not point_on_infinite_line(p1, p2, p3):
+                # First, the p1-p3 line must be inside the polygon
+                is_left = np.cross(p3 - p1, p2 - p1) > 0
+                if (is_left and is_clockwise) or (not is_left and not is_clockwise):
+                    # Next, are no other points inside the triangle
+                    is_ear = True
+                    j = 0
+                    while j < len(vl) and is_ear:
+                        if j != i and j != ((i+1) % lnvl) and j != ((i+2) % lnvl):
+                            # Check if there are points inside -- if so, it's not an ear
+                            if point_in_poly(vl[j], [p1,p2,p3]):
                                 is_ear = False
-                    j += 1
-                if(is_ear):
-                    # Pop that triangle onto the list, remove the ear point
-                    trilist.append([p1,p2,p3])
-                    del vl[(i+1) % lnvl]
-                    running = False
+                            # Check if there are points on the vertices -- if so, it's not an ear (unless it's a copy)
+                            if point_on_line(vl[j], p1, p2) or point_on_line(vl[j], p2, p3) or point_on_line(vl[j], p1, p3):
+                                if not (all(vl[j] == p1) or all(vl[j]==p2) or all(vl[j]==p3)):
+                                    is_ear = False
+                        j += 1
+                    if(is_ear):
+                        # Pop that triangle onto the list, remove the ear point
+                        trilist.append([p1,p2,p3])
+                        del vl[(i+1) % lnvl]
+                        running = False
             i += 1
     trilist.append(vl)
     return trilist

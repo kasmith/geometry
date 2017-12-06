@@ -9,7 +9,7 @@ __all__ = ['check_clockwise', 'check_counterclockwise', 'point_in_poly',
            'euclid_dist', 'lines_intersect', 'find_intersection_point',
            'angle_between', 'find_mutually_visible', 'point_on_line',
            'distance_point_2_line', 'distance_point_2_seg', 'point_on_left',
-           'point_in_concave_poly']
+           'point_in_concave_poly', 'point_on_infinite_line']
 
 
 def euclid_dist(p1, p2):
@@ -141,6 +141,31 @@ def point_in_concave_poly(point, vertices):
             n_intersects += 1
     return (n_intersects % 2) == 1
 
+def point_on_infinite_line(point, p1, p2, tol=1e-6):
+    """Determines whether a point lies on an infinite line
+
+    Allows for a small tolerance
+
+    Args:
+        point ([float, float]): the point to test
+        p1 ([float, float]): point 1 defining the line
+        p2 ([float, float]): point 2 defining the line
+        tol (float): the maximum distance of the point from the 1d line
+
+    Returns:
+        bool indicating whether the point lies within tol of the infinite line
+    """
+    # Special case: vertical lines:
+    if p1[0] == p2[0]:
+        if point[0] != p1[0]:
+            return False
+        else:
+            miny = min(p1[1], p2[1])
+            maxy = max(p1[1], p2[1])
+            return miny <= point[1] <= maxy
+    prop_along = (point[0] - p1[0]) / (p2[0] - p1[0])
+    guess_y = p1[1] + prop_along * (p2[1] - p1[1])
+    return abs(guess_y - point[1]) < tol
 
 def point_on_line(point, seg_p1, seg_p2, tol=1e-6):
     """Determines whether a point lies on a line segment
@@ -208,11 +233,36 @@ def find_intersection_point(a, b, c, d):
     qp_cross_r = np.cross(q - p, r)
     r_cross_s = np.cross(r, s)
     if qp_cross_r == 0 and r_cross_s == 0:
-        # Parallel and collinear
-        if p[0] < q[0]:
-            return p
-        else:
-            return q
+        # Make sure they overlap
+        if r[0] > 0: # AB goes to the right
+            if a[0] < c[0] < b[0]:
+                return q
+            elif a[0] < d[0] < b[0]:
+                return q+s
+            else:
+                return None
+        elif r[0] < 0: # AB goes to the left
+            if b[0] < c[0] < a[0]:
+                return q
+            elif b[0] < d[0] < a[0]:
+                return q+s
+            else:
+                return None
+        else: # Vertical
+            if r[1] > 0:
+                if a[1] < c[1] < b[1]:
+                    return q
+                elif a[1] < d[1] < b[1]:
+                    return q+s
+                else:
+                    return None
+            elif r[1] < 0:
+                if b[1] < c[1] < a[1]:
+                    return q
+                elif b[1] < d[1] < a[1]:
+                    return q+s
+                else:
+                    return None
     if r_cross_s == 0 and qp_cross_r != 0:
         # Parallel and not collinear
         return None
