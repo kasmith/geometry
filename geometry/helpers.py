@@ -86,7 +86,7 @@ def check_counterclockwise(vertices):
     return tot < 0
 
 
-def point_in_poly(point, vertices):
+def point_in_poly(point, vertices, count_edges=False):
     """Determines whether a point is in a convex polygon
 
     Adapted from http://stackoverflow.com/questions/1119627/how-to-test-if-a-point-is-inside-of-a-convex-polygon-in-2d-integer-coordinates
@@ -94,6 +94,7 @@ def point_in_poly(point, vertices):
     Args:
         point ([float, float]): The (x,y) point to test
         vertices (list): A list of (x,y) vertices forming a convex hull
+        count_edges (bool): Should points on the edge be part of the poly?
 
     Returns:
         bool indicating whether the point is on the inside of the polygon
@@ -110,7 +111,7 @@ def point_in_poly(point, vertices):
         elif xprod > 0:
             cside = 1
         else:
-            return False  # On an edge (which counts as inside)
+            return count_edges  # On an edge
         if pside is None:
             pside = cside
         else:
@@ -118,8 +119,7 @@ def point_in_poly(point, vertices):
                 return False
     return True
 
-
-def point_in_concave_poly(point, vertices):
+def point_in_concave_poly(point, vertices, count_edges=False):
     """Determines whether a point is in a non-convex polygon
 
     Adapted from http://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
@@ -127,6 +127,7 @@ def point_in_concave_poly(point, vertices):
     Args:
         point ([float, float]): The (x,y) point to test
         vertices (list): A list of (x,y) vertices forming a non-convex hull
+        count_edges (bool): Should points on the edge be part of the poly?
 
     Returns:
         bool indicating whether the point is on the inside of the polygon
@@ -138,7 +139,11 @@ def point_in_concave_poly(point, vertices):
         v1 = vertices[i]
         v2 = vertices[(i + 1) % len(vertices)]
         if lines_intersect(point, p_ray, v1, v2):
-            n_intersects += 1
+            if count_edges:
+                if not point_on_line(point, v1, v2):
+                    n_intersects += 1
+            else:
+                n_intersects += 1
     return (n_intersects % 2) == 1
 
 def point_on_infinite_line(point, p1, p2, tol=1e-6):
