@@ -138,12 +138,11 @@ def point_in_concave_poly(point, vertices, count_edges=False):
     for i in range(len(vertices)):
         v1 = vertices[i]
         v2 = vertices[(i + 1) % len(vertices)]
+        if count_edges:
+            if point_on_line(point, v1, v2):
+                return True
         if lines_intersect(point, p_ray, v1, v2):
-            if count_edges:
-                if not point_on_line(point, v1, v2):
-                    n_intersects += 1
-            else:
-                n_intersects += 1
+            n_intersects += 1
     return (n_intersects % 2) == 1
 
 def point_on_infinite_line(point, p1, p2, tol=1e-6):
