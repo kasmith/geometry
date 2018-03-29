@@ -3,8 +3,8 @@
 
 from __future__ import division, print_function
 import numpy as np
-from helpers import *
-from convex import *
+from .helpers import *
+from .convex import *
 import copy
 
 __all__ = ['approximate_convex_decomposition']

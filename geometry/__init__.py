@@ -1,8 +1,8 @@
-from helpers import *
-from triangles import *
-from nonconvex import *
-from convex import *
-from shapes import *
+from .helpers import *
+from .triangles import *
+from .nonconvex import *
+from .convex import *
+from .shapes import *
 
 __all__ = ['check_clockwise', 'check_counterclockwise', 'point_in_poly',
            'euclid_dist', 'lines_intersect', 'find_intersection_point',

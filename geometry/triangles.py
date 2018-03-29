@@ -3,7 +3,7 @@
 
 from __future__ import division, print_function
 import numpy as np
-from helpers import *
+from .helpers import *
 
 __all__ = ['ear_clip', 'ear_clip_with_holes']
 

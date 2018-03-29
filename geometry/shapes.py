@@ -3,7 +3,7 @@
 
 from __future__ import division, print_function
 import numpy as np
-from convex import convex_area, convex_centroid
+from .convex import convex_area, convex_centroid
 
 __all__ = ['recenter_polygon', 'centroid_for_shapes',
            'centroid_for_uncomputed_shapes', 'recenter_system',
