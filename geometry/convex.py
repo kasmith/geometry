@@ -52,7 +52,7 @@ def convex_area(vertices):
     off = vertices[0]
     twicearea = 0
     nverts = len(vertices)
-    for i in xrange(nverts):
+    for i in range(nverts):
         j = (i - 1) % nverts
         v1 = vertices[i]
         v2 = vertices[j]
