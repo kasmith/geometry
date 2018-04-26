@@ -100,7 +100,7 @@ def _sp_concavity(pocket, bridge):
     b_minus = pocket[0]
     b_plus = pocket[-1]
     tan_dir = [-(b_plus[1] - b_minus[1]), b_plus[0] - b_minus[0]]
-    scaling_factor = max(map(max, pocket))
+    scaling_factor = max([max(p) for p in pocket])
     tan_ray_minus = b_minus + tan_dir * scaling_factor
     tan_ray_plus = b_plus + tan_dir * scaling_factor
     # Go through the points until we hit an intersection with the tangent line

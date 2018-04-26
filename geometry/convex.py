@@ -71,7 +71,7 @@ def convex_centroid(vertices):
     """
     tsum = 0
     vsum = np.zeros(2)
-    arrv = map(lambda v: np.array(v), vertices)
+    arrv = [np.array(v) for v in vertices]
     for i in range(len(arrv)):
         v1 = arrv[i]
         v2 = arrv[(i+1) % len(arrv)]
