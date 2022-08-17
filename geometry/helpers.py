@@ -1,7 +1,7 @@
 """Helper functions that are used to support geometric functions
 """
 
-from __future__ import division, print_function
+from typing import Tuple, Annotated, Dict
 import numpy as np
 import copy
 
@@ -12,7 +12,8 @@ __all__ = ['check_clockwise', 'check_counterclockwise', 'point_in_poly',
            'point_in_concave_poly', 'point_on_infinite_line']
 
 
-def euclid_dist(p1, p2):
+def euclid_dist(p1: Tuple[float, float],
+                p2: Tuple[float, float]) -> float:
     """Returns the euclidean distance between two points
 
     Args:
@@ -27,7 +28,8 @@ def euclid_dist(p1, p2):
     return np.sqrt(dx * dx + dy * dy)
 
 
-def angle_between(v1, v2):
+def angle_between(v1: Tuple[float, float],
+                  v2: Tuple[float, float]) -> float:
     """Returns the angle from v1 to v2
 
     Args:
@@ -42,7 +44,7 @@ def angle_between(v1, v2):
     return np.arccos(np.clip(np.dot(v1_n, v2_n), -1., 1.))
 
 
-def check_clockwise(vertices):
+def check_clockwise(vertices: List[Tuple[float, float]]) -> bool:
     """Checks whether a set of vertices wind in clockwise order
 
     Adapted from http://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
@@ -64,7 +66,7 @@ def check_clockwise(vertices):
     return tot > 0
 
 
-def check_counterclockwise(vertices):
+def check_counterclockwise(vertices: List[Tuple[float, float]]) -> bool:
     """Checks whether a set of vertices wind in counter-clockwise order
 
     Adapted from http://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
@@ -86,7 +88,9 @@ def check_counterclockwise(vertices):
     return tot < 0
 
 
-def point_in_poly(point, vertices, count_edges=False):
+def point_in_poly(point: Tuple[float, float],
+                  vertices: List[Tuple[float, float]],
+                  count_edges: bool=False) -> bool:
     """Determines whether a point is in a convex polygon
 
     Adapted from http://stackoverflow.com/questions/1119627/how-to-test-if-a-point-is-inside-of-a-convex-polygon-in-2d-integer-coordinates
@@ -119,7 +123,9 @@ def point_in_poly(point, vertices, count_edges=False):
                 return False
     return True
 
-def point_in_concave_poly(point, vertices, count_edges=False):
+def point_in_concave_poly(point: Tuple[float, float],
+                          vertices: List[Tuple[float, float]],
+                          count_edges: bool=False) -> float:
     """Determines whether a point is in a non-convex polygon
 
     Adapted from http://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
@@ -145,7 +151,10 @@ def point_in_concave_poly(point, vertices, count_edges=False):
             n_intersects += 1
     return (n_intersects % 2) == 1
 
-def point_on_infinite_line(point, p1, p2, tol=1e-6):
+def point_on_infinite_line(point: Tuple[float, float],
+                           p1: Tuple[float, float],
+                           p2: Tuple[float, float],
+                           tol: float=1e-6) -> bool:
     """Determines whether a point lies on an infinite line
 
     Allows for a small tolerance
@@ -171,7 +180,10 @@ def point_on_infinite_line(point, p1, p2, tol=1e-6):
     guess_y = p1[1] + prop_along * (p2[1] - p1[1])
     return abs(guess_y - point[1]) < tol
 
-def point_on_line(point, seg_p1, seg_p2, tol=1e-6):
+def point_on_line(point: Tuple[float, float],
+                  seg_p1: Tuple[float, float],
+                  seg_p2: Tuple[float, float],
+                  tol: float=1e-6):
     """Determines whether a point lies on a line segment
 
     Allows for a small tolerance
@@ -204,7 +216,10 @@ def _ccw(a, b, c):
     return (c[1] - a[1]) * (b[0] - a[0]) > (b[1] - a[1]) * (c[0] - a[0])
 
 
-def lines_intersect(a, b, c, d):
+def lines_intersect(a: Tuple[float, float],
+                    b: Tuple[float, float],
+                    c: Tuple[float, float],
+                    d: Tuple[float, float]) -> bool:
     """Checks whether the two line segments ab and cd intersect
 
     From http://bryceboe.com/2006/10/23/line-segment-intersection-algorithm/
@@ -218,7 +233,10 @@ def lines_intersect(a, b, c, d):
     return _ccw(a, c, d) != _ccw(b, c, d) and _ccw(a, b, c) != _ccw(a, b, d)
 
 
-def find_intersection_point(a, b, c, d):
+def find_intersection_point(a: Tuple[float, float],
+                    b: Tuple[float, float],
+                    c: Tuple[float, float],
+                    d: Tuple[float, float]) -> Tuple[float, float]:
     """Finds the point of intersections between segments ab and cd
 
     From http://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
@@ -278,7 +296,8 @@ def find_intersection_point(a, b, c, d):
         return None
 
 
-def point_on_left(pt, seg):
+def point_on_left(pt: Tuple[float, float],
+                  seg: Annotated[Tuple[float, float], 2]) -> bool:
     """Finds whether a point is on the left of a given line defined by a segment
 
     Args:
@@ -293,7 +312,8 @@ def point_on_left(pt, seg):
     return cprod > 0
 
 
-def find_mutually_visible(exterior_hull, interior_hull):
+def find_mutually_visible(exterior_hull: List[Tuple[float, float]],
+                          interior_hull: List[Tuple[float, float]]):
     """Finds mututally visible points for doing clipping with interior holes
 
     Logic based on https://www.geometrictools.com/Documentation/TriangulationByEarClipping.pdf
@@ -375,7 +395,8 @@ def find_mutually_visible(exterior_hull, interior_hull):
     return min_idx, hp_idx, min_pt, gx_in
 
 
-def distance_point_2_line(point, seg):
+def distance_point_2_line(point: Tuple[float, float],
+                          seg: Annotated[Tuple[float, float], 2]):
     """Finds the minimum distance and closest point between a point and a line
 
     Args:
@@ -394,7 +415,8 @@ def distance_point_2_line(point, seg):
     return dist, seg[0] + proj
 
 
-def distance_point_2_seg(point, seg):
+def distance_point_2_seg(point: Tuple[float, float],
+                          seg: Annotated[Tuple[float, float], 2]):
     """Finds the minimum distance and closest point between a point and a segment
 
     Args:

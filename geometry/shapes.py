@@ -1,7 +1,7 @@
 """Functions that work on collections of shapes
 """
 
-from __future__ import division, print_function
+from typing import Tuple, Annotated, Dict
 import numpy as np
 from .convex import convex_area, convex_centroid
 
@@ -11,7 +11,7 @@ __all__ = ['recenter_polygon', 'centroid_for_shapes',
            'rotate_system', 'mirror_polygon', 'mirror_system',
            'find_concave_outline']
 
-def recenter_polygon(vertices):
+def recenter_polygon(vertices: List[Tuple[float, float]]) -> List[Tuple[float, float]]:
     """Returns a new convex polygon with centroid at (0,0)
 
     Args:
@@ -28,7 +28,8 @@ def recenter_polygon(vertices):
         new_verts.append(v - centroid)
     return new_verts
 
-def centroid_for_shapes(centroids, areas = None):
+def centroid_for_shapes(centroids: List[Tuple[float, float]],
+                        areas: List[float] = None) -> Tuple[float, float]:
     """Calculates the centroid for a set of shapes
 
     Requires pre-computed centroids and areas
@@ -52,7 +53,7 @@ def centroid_for_shapes(centroids, areas = None):
     return np.array(gc)
 
 
-def centroid_for_uncomputed_shapes(shape_list):
+def centroid_for_uncomputed_shapes(shape_list: List[List[Tuple[float, float]]]) -> Tuple[float, float]:
     """Like centroid_for_shapes but calculates centroids & areas
 
     Args:
@@ -69,7 +70,7 @@ def centroid_for_uncomputed_shapes(shape_list):
     return centroid_for_shapes(centroids, areas)
 
 
-def recenter_system(shape_list):
+def recenter_system(shape_list: List[List[Tuple[float, float]]]):
     """Recenters a set of shapes around the centroid of all of them
 
     Args:
@@ -104,7 +105,8 @@ def recenter_system(shape_list):
     return final_shapes, center
 
 
-def rescale_and_recenter_system(shape_list, total_area):
+def rescale_and_recenter_system(shape_list: List[List[Tuple[float, float]]],
+                                total_area: float):
     """Recenters a set of shapes and resizes them to have a total fixed area
 
     Args:
@@ -177,7 +179,9 @@ def rotate_system(shape_list, angle, center_point = None):
         center_point = centroid_for_uncomputed_shapes(shape_list)
     return [rotate_polygon(s, angle, center_point) for s in shape_list]
 
-def mirror_polygon(vertices, axes=(False, True), center_point=None):
+def mirror_polygon(vertices: List[Tuple[float, float]],
+                   axes: Tuple[bool, bool]=(False, True),
+                   center_point: Tuple[float, float]=None):
     """Mirrors a polygon around an x or y line
 
     If center_point is None, mirror around the center of the shape
@@ -198,7 +202,9 @@ def mirror_polygon(vertices, axes=(False, True), center_point=None):
                       ym*(v[1]-center_point[1])+center_point[1]]) for v
             in vertices]
 
-def mirror_system(shape_list, axes=(False, True), center_point=None):
+def mirror_system(shape_list: List[List[Tuple[float, float]]],
+                  axes: Tuple[bool, bool]=(False, True),
+                  center_point: Tuple[float, float]=None):
     """Mirrors a polygon around an x or y line
 
     Mirrors around the center of the system if center_point is None
@@ -222,7 +228,7 @@ def _point_equal(p1, p2):
 def _arr_eq(a1, a2):
     return all(_point_equal(p1,p2) for p1, p2 in zip(a1, a2))
 
-def find_concave_outline(shape_list):
+def find_concave_outline(shape_list: List[List[Tuple[float, float]]]):
     """Find the outline of a set of shapes
 
     Assuming all shapes have edges in common with other shapes where they touch,

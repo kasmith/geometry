@@ -1,7 +1,7 @@
 """Classes for handling non-convex polygons
 """
 
-from __future__ import division, print_function
+from typing import Tuple, Annotated, Dict
 import numpy as np
 from .helpers import *
 from .convex import *

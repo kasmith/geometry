@@ -1,14 +1,14 @@
 """Functions that help with convex hulls
 """
 
-from __future__ import division, print_function
+from typing import Tuple, Annotated, Dict
 import numpy as np
 from .helpers import *
 
 __all__ = ['gift_wrap', 'convex_area', 'convex_centroid']
 
 
-def gift_wrap(vertices):
+def gift_wrap(vertices: List[Tuple[float, float]]) -> List[Tuple[float, float]]:
     """Simple function to gift wrap a set of vertices to get the convex hull
 
     Uses the gift-wrapping algorithm
@@ -40,7 +40,7 @@ def gift_wrap(vertices):
     hull.reverse()
     return hull
 
-def convex_area(vertices):
+def convex_area(vertices: List[Tuple[float, float]]) -> float:
     """Returns the area of a convex polygon
 
     Args:
@@ -60,7 +60,7 @@ def convex_area(vertices):
                       (v2[0]-off[0]) * (v1[1]-off[1]))
     return twicearea / 2.
 
-def convex_centroid(vertices):
+def convex_centroid(vertices: List[Tuple[float, float]]) -> Tuple[float, float]:
     """Returns the centroid of a convex polygon
 
     Args:

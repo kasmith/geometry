@@ -1,7 +1,7 @@
 """Functions for handling triangles
 """
 
-from __future__ import division, print_function
+from typing import Tuple, Annotated, Dict
 import numpy as np
 from .helpers import *
 
@@ -9,7 +9,7 @@ __all__ = ['ear_clip', 'ear_clip_with_holes']
 
 
 
-def ear_clip(vertices):
+def ear_clip(vertices: List[Tuple[float, float]]):
     """Uses ear clipping to perform triangulation of a non-convex vertex set
 
     Input:
@@ -61,7 +61,8 @@ def ear_clip(vertices):
 
 
 
-def ear_clip_with_holes(outer_shell, hole_list):
+def ear_clip_with_holes(outer_shell: List[Tuple[float, float]],
+                        hole_list: List[List[Tuple[float, float]]]):
     """Performs ear clipping when the shell has holes
 
     Args:
