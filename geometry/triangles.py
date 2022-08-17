@@ -21,7 +21,7 @@ def ear_clip(vertices: List[Tuple[float, float]]):
     assert len(vertices) >= 3, "Requires at least 3 points to triangulate"
     is_clockwise = check_clockwise(vertices)
     trilist = []
-    vl = map(np.array, vertices) # Copy and make into numpy arrays (for easy calculation)
+    vl = list(map(np.array, vertices)) # Copy and make into numpy arrays (for easy calculation)
     # Go through and keep clipping ears off
     while len(vl) > 3:
         i = 0
@@ -75,8 +75,8 @@ def ear_clip_with_holes(outer_shell: List[Tuple[float, float]],
         * The list of vertices forming the outer hull
     """
     # Copy each and make into numpy arrays
-    outer_shell = map(np.array, outer_shell)
-    hole_list = [map(np.array, hole) for hole in hole_list]
+    outer_shell = list(map(np.array, outer_shell))
+    hole_list = [list(map(np.array, hole)) for hole in hole_list]
     # Make sure that holes are reverse wound from outer_shell
     # So outer_shell goes ccw, holes go cw
     if check_clockwise(outer_shell):
