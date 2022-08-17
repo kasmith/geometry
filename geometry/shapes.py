@@ -1,7 +1,7 @@
 """Functions that work on collections of shapes
 """
 
-from typing import Tuple, Annotated, Dict
+from typing import Tuple, Annotated, Dict, List
 import numpy as np
 from .convex import convex_area, convex_centroid
 

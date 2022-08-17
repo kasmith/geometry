@@ -1,7 +1,7 @@
 """Helper functions that are used to support geometric functions
 """
 
-from typing import Tuple, Annotated, Dict
+from typing import Tuple, Annotated, Dict, List
 import numpy as np
 import copy
 

@@ -1,7 +1,7 @@
 """Functions that help with convex hulls
 """
 
-from typing import Tuple, Annotated, Dict
+from typing import Tuple, Annotated, Dict, List
 import numpy as np
 from .helpers import *
 
